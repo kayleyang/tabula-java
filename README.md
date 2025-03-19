@@ -1,4 +1,4 @@
-tabula-java [![Build Status](https://travis-ci.org/tabulapdf/tabula-java.svg?branch=master)](https://travis-ci.org/tabulapdf/tabula-java) [![Build status](https://ci.appveyor.com/api/projects/status/l5gym1mjhrd2v8yn?svg=true)](https://ci.appveyor.com/project/jazzido/tabula-java)
+tabula-java [![Build Status](https://travis-ci.org/tabulapdf/tabula-java.svg?branch=master)](https://travis-ci.org/tabulapdf/tabula-java)
 ===========
 
 `tabula-java` is a library for extracting tables from PDF files — it is the table extraction engine that powers [Tabula](http://tabula.technology/) ([repo](http://github.com/tabulapdf/tabula)). You can use `tabula-java` as a command-line tool to programmatically extract tables from PDFs.
@@ -9,7 +9,7 @@ tabula-java [![Build Status](https://travis-ci.org/tabulapdf/tabula-java.svg?bra
 
 Download a version of the tabula-java's jar, with all dependencies included, that works on Mac, Windows and Linux from our [releases page](../../releases).
 
-## Usage Examples
+## Commandline Usage Examples
 
 `tabula-java` provides a command line application:
 
@@ -80,6 +80,47 @@ JVM start-up time is a lot of the cost of the `tabula` command, so if you're try
  - the [Ruby](http://github.com/tabulapdf/tabula-extractor), [Python](https://github.com/chezou/tabula-py), [R](https://github.com/leeper/tabulizer), and [Node.js](https://github.com/ezodude/tabula-js) bindings
  - writing your own program in any JVM language (Java, JRuby, Scala) that imports tabula-java.
  - waiting for us to implement an API/server-style system (it's on the [roadmap](https://github.com/tabulapdf/tabula-api))
+
+## API Usage Examples
+
+A simple Java code example which extracts all rows and cells from all tables of all pages of a PDF document:
+
+```java
+InputStream in = this.getClass().getResourceAsStream("my.pdf");
+try (PDDocument document = PDDocument.load(in)) {
+    SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+    PageIterator pi = new ObjectExtractor(document).extract();
+    while (pi.hasNext()) {
+        // iterate over the pages of the document
+        Page page = pi.next();
+        List<Table> table = sea.extract(page);
+        // iterate over the tables of the page
+        for(Table tables: table) {
+            List<List<RectangularTextContainer>> rows = tables.getRows();
+            // iterate over the rows of the table
+            for (List<RectangularTextContainer> cells : rows) {
+                // print all column-cells of the row plus linefeed
+                for (RectangularTextContainer content : cells) {
+                    // Note: Cell.getText() uses \r to concat text chunks
+                    String text = content.getText().replace("\r", " ");
+                    System.out.print(text + "|");
+                }
+                System.out.println();
+            }
+        }
+    }
+}
+```
+
+
+For more detail information check the Javadoc. 
+The Javadoc API documentation can be generated (see also '_Building from Source_' section) via
+
+```
+mvn javadoc:javadoc
+```
+
+which generates the HTML files to directory ```target/site/apidocs/```
 
 ## Building from Source
 
